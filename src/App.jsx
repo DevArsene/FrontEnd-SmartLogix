@@ -1,32 +1,23 @@
-import { useInventory } from './hooks/useInventory';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import InventoryPage from './pages/InventoryPage';
+import OrdersPage from './pages/OrdersPage';
+import { useTheme } from './hooks/useTheme';
+import './App.css';
 
 function App() {
-  const { inventory, loading, error } = useInventory();
-
-  if (loading) return <p>Cargando inventario...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div>
-      <h1>Inventario</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>Código Producto</th>
-            <th>Código Almacén</th>
-            <th>Stock</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inventory.map(item => (
-            <tr key={item.id}>
-              <td>{item.productoCodigo}</td>
-              <td>{item.almacenCodigo}</td>
-              <td>{item.stock}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="app-layout">
+      <Navbar theme={theme} onToggle={toggleTheme} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<InventoryPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+        </Routes>
+      </main>
     </div>
   );
 }
