@@ -1,23 +1,27 @@
-const BASE_BFF_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/auth'; // Assuming BFF is on the same base URL as auth service, adjust if needed
-const BASE_ORDERS_URL = import.meta.env.VITE_ORDERS_API_URL || 'http://localhost:8082/api/inventory';
+// 1. Extraemos las URLs del .env
+// VITE_API_BASE_URL ahora vale http://localhost:8082/api/inventory
+const INVENTORY_URL = import.meta.env.VITE_API_BASE_URL; 
+const ORDERS_URL = import.meta.env.VITE_ORDERS_API_URL;
 
 // GET - todos
 export const getAllStock = async () => {
-  const res = await fetch(`${BASE_URL}/inventory/all`);
+  // Resultado: http://localhost:8082/api/inventory/all
+  const res = await fetch(`${INVENTORY_URL}/all`); 
   if (!res.ok) throw new Error('Error al obtener inventario');
   return res.json();
 };
 
 // GET - por producto y almacén
 export const getStock = async (productoCodigo, almacenCodigo) => {
-  const res = await fetch(`${BASE_URL}/inventory/${productoCodigo}/${almacenCodigo}`);
+  // Resultado: http://localhost:8082/api/inventory/PROD01/ALM01
+  const res = await fetch(`${INVENTORY_URL}/${productoCodigo}/${almacenCodigo}`);
   if (!res.ok) throw new Error('Stock no encontrado');
   return res.json();
 };
 
 // POST - agregar uno
 export const addProduct = async (inventory) => {
-  const res = await fetch(`${BASE_URL}/inventory/add`, {
+  const res = await fetch(`${INVENTORY_URL}/add`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(inventory),
@@ -26,20 +30,9 @@ export const addProduct = async (inventory) => {
   return res.json();
 };
 
-// POST - agregar varios
-export const addProducts = async (products) => {
-  const res = await fetch(`${BASE_URL}/inventory/bulk-add`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(products),
-  });
-  if (!res.ok) throw new Error('Error al agregar productos');
-  return res.json();
-};
-
 // POST - actualizar stock
 export const updateStock = async (inventory) => {
-  const res = await fetch(`${BASE_URL}/inventory/update`, {
+  const res = await fetch(`${INVENTORY_URL}/update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(inventory),
