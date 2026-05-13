@@ -20,7 +20,7 @@ export const createOrderViaBff = async (formData) => {
 };
 
 export const getAllOrders = async () => {
-  const url = `${BASE_ORDERS_URL}/all`;
+  const url = `${BASE_ORDERS_URL}/orders/all`;
   console.log('[getAllOrders] GET →', url);
 
   const res = await fetch(url);
@@ -29,11 +29,10 @@ export const getAllOrders = async () => {
   const data = await res.json();
   console.log('[getAllOrders] respuesta →', data);
 
-  // Algunos backends devuelven { content: [...] } o { data: [...] } en vez de un array directo
   if (Array.isArray(data)) return data;
   if (Array.isArray(data.content)) return data.content;
   if (Array.isArray(data.data)) return data.data;
 
-  console.warn('[getAllOrders] formato inesperado, revisá la respuesta del backend:', data);
+  console.warn('[getAllOrders] formato inesperado:', data);
   return [];
 };
