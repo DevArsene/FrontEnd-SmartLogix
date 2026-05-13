@@ -8,30 +8,46 @@ import { Plus } from 'lucide-react';
 export default function OrdersPage() {
   const { orders, loading, error, placeOrder } = useOrders();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  
-  const [formData, setFormData] = useState({ tipo: '', codigoProducto: '', cantidad: 1 });
+
+  const [formData, setFormData] = useState({
+    numeroPedido: '',
+    productoCodigo: '',
+    cantidad: 1,
+    almacenCodigo: '',
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'cantidad' ? parseInt(value) || 1 : value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'cantidad' ? parseInt(value) || 1 : value,
+    }));
   };
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    await placeOrder(formData.tipo, formData.codigoProducto, formData.cantidad);
+    await placeOrder(formData);
     setIsAddModalOpen(false);
-    setFormData({ tipo: '', codigoProducto: '', cantidad: 1 });
+    setFormData({ numeroPedido: '', productoCodigo: '', cantidad: 1, almacenCodigo: '' });
+  };
+
+  const getStatusClass = (estado) => {
+    switch (estado) {
+      case 'COMPLETADO': return 'success';
+      case 'PENDIENTE':  return 'pending';
+      default:           return 'pending';
+    }
   };
 
   if (loading) return <div className="loading-state">Cargando pedidos...</div>;
-  if (error) return <div className="error-state">Error: {error.message}</div>;
+  if (error)   return <div className="error-state">Error: {error.message}</div>;
 
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>Gestión de Pedidos</h1>
+        <h1>Gestión de <span>Pedidos</span></h1>
         <Button onClick={() => setIsAddModalOpen(true)}>
-          <Plus size={16} style={{ marginRight: '8px' }}/>
+          <Plus size={16} />
           Nuevo Pedido
         </Button>
       </div>
@@ -40,9 +56,10 @@ export default function OrdersPage() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>ID Pedido</th>
-              <th>Tipo</th>
-              <th>Código Producto</th>
+              <th>ID</th>
+              <th>Nº Pedido</th>
+              <th>Cód. Producto</th>
+              <th>Cód. Almacén</th>
               <th>Cantidad</th>
               <th>Estado</th>
             </tr>
@@ -50,18 +67,27 @@ export default function OrdersPage() {
           <tbody>
             {orders.length === 0 && (
               <tr>
-                <td colSpan="5" className="text-center">No hay pedidos registrados.</td>
+                <td colSpan="6" className="text-center">No hay pedidos registrados.</td>
               </tr>
             )}
             {orders.map(order => (
               <tr key={order.id}>
-                <td>{order.id}</td>
-                <td><span className="badge">{order.tipo}</span></td>
-                <td>{order.productoCodigo}</td>
+                <td style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                  #{order.id}
+                </td>
+                <td>
+                  <span className="badge">{order.numeroPedido}</span>
+                </td>
+                <td style={{ fontFamily: 'var(--font-mono)' }}>
+                  {order.productoCodigo}
+                </td>
+                <td style={{ fontFamily: 'var(--font-mono)' }}>
+                  {order.almacenCodigo}
+                </td>
                 <td>{order.cantidad}</td>
                 <td>
-                  <span className={`status-indicator ${order.estado === 'COMPLETADO' ? 'success' : 'pending'}`}>
-                    {order.estado || 'PENDIENTE'}
+                  <span className={`status-indicator ${getStatusClass(order.estado)}`}>
+                    {order.estado ?? 'PENDIENTE'}
                   </span>
                 </td>
               </tr>
@@ -70,21 +96,60 @@ export default function OrdersPage() {
         </table>
       </Card>
 
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Crear Nuevo Pedido">
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Crear Nuevo Pedido"
+      >
         <form onSubmit={handleAddSubmit} className="form-layout">
           <div className="form-group">
-            <label>Tipo de Pedido (Ej: VENTA, COMPRA)</label>
-            <input type="text" name="tipo" value={formData.tipo} onChange={handleInputChange} required />
+            <label>Número de Pedido</label>
+            <input
+              type="text"
+              name="numeroPedido"
+              value={formData.numeroPedido}
+              onChange={handleInputChange}
+              placeholder="Ej: PED-2024-001"
+              required
+            />
           </div>
           <div className="form-group">
-            <label>Código Producto</label>
-            <input type="text" name="codigoProducto" value={formData.codigoProducto} onChange={handleInputChange} required />
+            <label>Código de Producto</label>
+            <input
+              type="text"
+              name="productoCodigo"
+              value={formData.productoCodigo}
+              onChange={handleInputChange}
+              placeholder="Ej: PROD-001"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Código de Almacén</label>
+            <input
+              type="text"
+              name="almacenCodigo"
+              value={formData.almacenCodigo}
+              onChange={handleInputChange}
+              placeholder="Ej: ALM-01"
+              required
+            />
           </div>
           <div className="form-group">
             <label>Cantidad</label>
-            <input type="number" name="cantidad" value={formData.cantidad} onChange={handleInputChange} min="1" required />
+            <input
+              type="number"
+              name="cantidad"
+              value={formData.cantidad}
+              onChange={handleInputChange}
+              min="1"
+              required
+            />
           </div>
           <div className="form-actions">
+            <Button type="button" className="btn btn-secondary" onClick={() => setIsAddModalOpen(false)}>
+              Cancelar
+            </Button>
             <Button type="submit">Procesar Pedido</Button>
           </div>
         </form>
